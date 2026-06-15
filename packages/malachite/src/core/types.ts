@@ -38,7 +38,7 @@ export interface PublishResult {
   cancelled: boolean;
 }
 
-export type ImportMode = 'lastfm' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate';
+export type ImportMode = 'lastfm' | 'listenbrainz' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate';
 
 export interface SpotifyRecord {
   ts: string;
@@ -73,7 +73,7 @@ export interface ListenBrainzRecord {
       music_service?: string;
       origin_url?: string;
     };
-    mbid_mapping: {
+    mbid_mapping?: {
       artist_mbids?: string[];
       release_mbid?: string;
       recording_mbid?: string;

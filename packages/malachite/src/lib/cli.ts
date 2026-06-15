@@ -40,6 +40,7 @@ import {
   ImportState,
 } from '../utils/import-state.js';
 import { formatLocaleNumber } from '../utils/platform.js';
+import { convertListenBrainzToPlayRecord, parseListenBrainzJson } from './listenbrainz.js';
 
 /**
  * Show help message
@@ -70,6 +71,7 @@ ${'\x1b[1m'}INPUT:${'\x1b[0m'}
 ${'\x1b[1m'}MODE:${'\x1b[0m'}
   -m, --mode <mode>              Import mode (default: lastfm)
                                  lastfm          Import Last.fm export only
+                                 listenbrainz    Import ListenBrainz export only
                                  spotify         Import Spotify export only
                                  apple           Import Apple Music export only
                                  youtube         Import YouTube Music export only
@@ -238,13 +240,13 @@ export function parseCommandLineArgs(): CommandLineArgs {
 /**
  * Validate and normalize mode
  */
-function validateMode(mode: string): 'lastfm' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate' {
-  const validModes = ['lastfm', 'spotify', 'apple', 'youtube', 'combined', 'sync', 'deduplicate'];
+function validateMode(mode: string): 'lastfm' | 'listenbrainz' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate' {
+  const validModes = ['lastfm', 'listenbrainz', 'spotify', 'apple', 'youtube', 'combined', 'sync', 'deduplicate'];
   const normalized = mode.toLowerCase();
   if (!validModes.includes(normalized)) {
     throw new Error(`Invalid mode: ${mode}. Must be one of: ${validModes.join(', ')}`);
   }
-  return normalized as 'lastfm' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate';
+  return normalized as 'lastfm' | 'listenbrainz' | 'spotify' | 'apple' | 'youtube' | 'combined' | 'sync' | 'deduplicate';
 }
 
 /**
@@ -747,6 +749,11 @@ export async function runCLI(): Promise<void> {
       const youtubeRecords = parseYouTubeMusicJson(args.input!);
       rawRecordCount = youtubeRecords.length;
       records = youtubeRecords.map(record => convertYouTubeMusicToPlayRecord(record, cfg, isDebug));
+    } else if (mode === 'listenbrainz') {
+      log.info('Importing from ListenBrainz export...');
+      const listenbrainzRecords = parseListenBrainzJson(args.input!);
+      rawRecordCount = listenbrainzRecords.length;
+      records = listenbrainzRecords.map(record => convertListenBrainzToPlayRecord(record));
     } else {
       log.info('Importing from Last.fm CSV export...');
       const csvRecords = parseLastFmCsv(args.input!);
